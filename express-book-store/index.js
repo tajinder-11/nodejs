@@ -1,10 +1,18 @@
 const express = require('express');
+const fs = require('node:fs');
 const { title } = require('node:process');
 const app = express();
 const PORT = 8000;
 
 // Middlewares (Plugins)
 app.use(express.json());
+
+// Custom middlewar to log requests
+app.use((req, res, next) => {
+  const log = `[${Date.now()}] ${req.method} ${req.path}\n`;
+  fs.appendFileSync('logs.txt', log, 'utf-8');
+  next();
+});
 
 // In memory database
 const books = [
