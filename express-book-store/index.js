@@ -4,15 +4,22 @@ const { title } = require('node:process');
 const app = express();
 const PORT = 8000;
 
-// Middlewares (Plugins)
-app.use(express.json());
-
-// Custom middlewar to log requests
-app.use((req, res, next) => {
+const loggerMiddleware = (req, res, next) => {
   const log = `[${Date.now()}] ${req.method} ${req.path}\n`;
   fs.appendFileSync('logs.txt', log, 'utf-8');
   next();
-});
+};
+
+const customMiddleWare = (req, res, next) => {
+  console.log('I am a custom middleware');
+  next();
+};
+
+// Middlewares (Plugins)
+app.use(express.json());
+
+// Custom middleware to log requests
+app.use(loggerMiddleware);
 
 // In memory database
 const books = [
@@ -24,7 +31,7 @@ app.get('/books', (req, res) => {
   res.json(books);
 });
 
-app.get('/books/:id', (req, res) => {
+app.get('/books/:id', customMiddleWare, (req, res) => {
   const id = Number(req.params.id);
   if (!isNaN(id)) {
     return res.status(400).json({ error: 'The id must be of type number' });
