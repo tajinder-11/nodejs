@@ -5,11 +5,9 @@ const { loggerMiddleware } = require('./middlewares/logger');
 const app = express();
 const PORT = 8000;
 
-// Middlewares (Plugins)
 app.use(express.json());
 app.use(loggerMiddleware);
 
-// Routes
 app.use('/books', bookRouter);
 
 app.listen(PORT, () => {
