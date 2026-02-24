@@ -14,6 +14,7 @@ const booksTable = pgTable('books', {
   authorId: uuid()
     .references(() => authorsTable.id)
     .notNull(),
+  authorName: varchar({ length: 256 }),
 });
 
 module.exports = {

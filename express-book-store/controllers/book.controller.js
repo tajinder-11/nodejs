@@ -1,15 +1,15 @@
-const booksTable = require('../models/book.model.js');
+const { booksTable } = require('../models/book.model');
 const db = require('../db/index.js');
 const { eq } = require('drizzle-orm');
 
 const getAllBooks = async (req, res) => {
-  const books = db.select().from(booksTable);
+  const books = await db.select().from(booksTable);
   res.json(books);
 };
 
 const getBookById = async (req, res) => {
   const id = req.params.id;
-  const [book] = db
+  const [book] = await db
     .select()
     .from(booksTable)
     .where((table) => eq(table.id, id))
@@ -24,7 +24,7 @@ const getBookById = async (req, res) => {
 };
 
 const createBook = async (req, res) => {
-  const { title, authorId } = req.body;
+  const { title, authorId, description, authorName } = req.body;
   if (!title.trim()) {
     return res.status(400).json({ error: 'Title is required' });
   }
@@ -35,6 +35,7 @@ const createBook = async (req, res) => {
       title,
       authorId,
       description,
+      authorName,
     })
     .returning({
       id: booksTable.id,
