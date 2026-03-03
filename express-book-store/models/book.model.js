@@ -23,7 +23,7 @@ const booksTable = pgTable(
   (table) => ({
     searchTableOnTitle: index('title_index').using(
       'gin',
-      sql`to_tsvector('english, ${table.title})`,
+      sql`to_tsvector('english', ${table.title})`,
     ),
   }),
 );
