@@ -28,8 +28,6 @@ app.post("/signup", (req, res) => {
 app.post("/me", (req, res) => {
   const { token } = req.body;
 
-  console.log("token:", token);
-
   if (!token) {
     return res.status(400).json({ error: "token is required." });
   }
