@@ -6,9 +6,26 @@ import { userSessions, usersTable } from '../db/schema.js';
 import { createHmac, randomBytes } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 
+router.patch('/', async (req, res) => {
+  const user = req.user;
+
+  if (!user) {
+    res.status(401).json({ error: 'You are not logged in' });
+  }
+  const { name } = req.body;
+  await db.update(usersTable).set({ name }).where(eq(usersTable.id, user.id));
+  res.json({ status: 'success' });
+});
+
 // returns current logged in user
-router.get('/', (req, res) => {
-  res.send('User route');
+router.get('/', async (req, res) => {
+  // res.send('User route');
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ error: 'You are not logged in' });
+  }
+
+  return res.json({ user });
 });
 
 // signup
