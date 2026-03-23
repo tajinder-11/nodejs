@@ -6,26 +6,20 @@ import { usersTable } from '../db/schema.js';
 import { createHmac, randomBytes } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
+import { ensureAuthenticated } from '../middlewares/auth.middleware.js';
 
-router.patch('/', async (req, res) => {
-  const user = req.user;
-
-  if (!user) {
-    return res.status(401).json({ error: 'You are not logged in' });
-  }
+router.patch('/', ensureAuthenticated, async (req, res) => {
   const { name } = req.body;
-  await db.update(usersTable).set({ name }).where(eq(usersTable.id, user.id));
+  await db
+    .update(usersTable)
+    .set({ name })
+    .where(eq(usersTable.id, req.user.id));
   res.json({ status: 'success' });
 });
 
 // returns current logged in user
-router.get('/', async (req, res) => {
-  const user = req.user;
-  if (!user) {
-    return res.status(401).json({ error: 'You are not logged in' });
-  }
-
-  return res.json({ user });
+router.get('/', ensureAuthenticated, async (req, res) => {
+  return res.json({ user: req.user });
 });
 
 // signup
@@ -49,11 +43,10 @@ router.post('/signup', async (req, res) => {
   const [user] = await db
     .insert(usersTable)
     .values({ name, email, password: hashedPasword, salt })
-    .returning({ id: usersTable.id });
+    // .returning({ id: usersTable.id });
+    .returning();
 
-  res
-    .status(200)
-    .json({ status: 'User creates successfully', data: { user_data: user } });
+  res.status(200).json({ status: 'User creates successfully', data: { user } });
 });
 
 // login
@@ -67,6 +60,7 @@ router.post('/login', async (req, res) => {
       email: usersTable.email,
       salt: usersTable.salt,
       password: usersTable.password,
+      role: usersTable.role,
     })
     .from(usersTable)
     .where(eq(usersTable.email, email));
@@ -87,6 +81,7 @@ router.post('/login', async (req, res) => {
     id: existingUser.id,
     email: existingUser.email,
     name: existingUser.name,
+    role: existingUser.role,
   };
   const token = jwt.sign(payload, process.env.JWT_SECRET);
   return res.status(200).json({ status: 'success', token });
