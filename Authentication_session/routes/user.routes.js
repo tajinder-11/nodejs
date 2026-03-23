@@ -2,15 +2,16 @@ import express from 'express';
 
 const router = express.Router();
 import db from '../db/index.js';
-import { userSessions, usersTable } from '../db/schema.js';
+import { usersTable } from '../db/schema.js';
 import { createHmac, randomBytes } from 'node:crypto';
 import { eq } from 'drizzle-orm';
+import jwt from 'jsonwebtoken';
 
 router.patch('/', async (req, res) => {
   const user = req.user;
 
   if (!user) {
-    res.status(401).json({ error: 'You are not logged in' });
+    return res.status(401).json({ error: 'You are not logged in' });
   }
   const { name } = req.body;
   await db.update(usersTable).set({ name }).where(eq(usersTable.id, user.id));
@@ -19,7 +20,6 @@ router.patch('/', async (req, res) => {
 
 // returns current logged in user
 router.get('/', async (req, res) => {
-  // res.send('User route');
   const user = req.user;
   if (!user) {
     return res.status(401).json({ error: 'You are not logged in' });
@@ -55,6 +55,7 @@ router.post('/signup', async (req, res) => {
     .status(200)
     .json({ status: 'User creates successfully', data: { user_data: user } });
 });
+
 // login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -62,6 +63,7 @@ router.post('/login', async (req, res) => {
   const [existingUser] = await db
     .select({
       id: usersTable.id,
+      name: usersTable.name,
       email: usersTable.email,
       salt: usersTable.salt,
       password: usersTable.password,
@@ -78,17 +80,16 @@ router.post('/login', async (req, res) => {
 
   const newHash = createHmac('sha256', salt).update(password).digest('hex');
   if (newHash !== existingHash) {
-    res.status(400).json({ error: 'Incorrect password' });
+    return res.status(400).json({ error: 'Incorrect password' });
   }
 
-  // Generate session for user
-  const [session] = await db
-    .insert(userSessions)
-    .values({
-      userId: existingUser.id,
-    })
-    .returning({ id: userSessions.id });
-  return res.status(200).json({ status: 'success', sessionId: session.id });
+  const payload = {
+    id: existingUser.id,
+    email: existingUser.email,
+    name: existingUser.name,
+  };
+  const token = jwt.sign(payload, process.env.JWT_SECRET);
+  return res.status(200).json({ status: 'success', token });
 });
 
 export default router;
