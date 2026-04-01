@@ -1,0 +1,26 @@
+import express from 'express';
+import db from '../db/index.js';
+import { usersTable } from '../db/schema.js';
+import {
+  ensureAuthenticated,
+  restrictToRole,
+} from '../middlewares/auth.middleware.js';
+const router = express.Router();
+
+const adminRestrictMiddleWare = restrictToRole('ADMIN');
+router.use(ensureAuthenticated);
+router.use(adminRestrictMiddleWare);
+
+router.get('/users', async (req, res) => {
+  const users = await db
+    .select({
+      id: usersTable.id,
+      name: usersTable.name,
+      email: usersTable.email,
+      role: usersTable.role,
+    })
+    .from(usersTable);
+  return res.json({ users });
+});
+
+export default router;
