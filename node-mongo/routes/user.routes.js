@@ -2,8 +2,17 @@ import express from 'express';
 import User from '../models/user.model.js';
 import { randomBytes, createHmac } from 'node:crypto';
 import jwt from 'jsonwebtoken';
+import { ensureAuthenticated } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
+
+router.patch('/', ensureAuthenticated, async (req, res) => {
+  const { name } = req.body;
+  await User.findByIdAndUpdate(req.user._id, {
+    name,
+  });
+  return res.json({ status: 'Success' });
+});
 
 router.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
@@ -52,7 +61,7 @@ router.post('/login', async (req, res) => {
   }
 
   const payload = {
-    name: existingUser.payload,
+    name: existingUser.name,
     _id: existingUser._id,
     email: existingUser.email,
   };
