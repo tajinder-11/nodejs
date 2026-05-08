@@ -1,10 +1,7 @@
 import express from 'express';
 import { hashedPasswordWithSalt } from '../utils/hash.js';
 import { createNewUser, getUserByEmail } from '../services/user.services.js';
-import {
-  signupPostRequestBodySchema,
-  loginPostRequestBodySchema,
-} from '../validations/request.validation.js';
+import { signupPostRequestBodySchema } from '../validations/request.validation.js';
 
 const router = express.Router();
 
