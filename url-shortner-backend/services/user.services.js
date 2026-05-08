@@ -37,6 +37,5 @@ export async function createNewUser({
       firstName: usersTable.firstName,
       lastName: usersTable.lastName,
     });
-  console.log('USER: ', user);
   return user;
 }
