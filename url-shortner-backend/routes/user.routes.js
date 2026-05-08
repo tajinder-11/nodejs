@@ -2,6 +2,7 @@ import express from 'express';
 import { signupPostRequestBodySchema } from '../validations/request.validation.js';
 import { hashedPasswordWithSalt } from '../utils/hash.js';
 import { createNewUser, getUserByEmail } from '../services/user.services.js';
+import { signupPostRequestBodySchema } from '../validations/request.validation.js';
 
 const router = express.Router();
 
@@ -15,7 +16,12 @@ router.post('/signup', async (req, res) => {
   }
 
   const { firstName, lastName, email, password } = validationResult.data;
-  const existingUser = await getUserByEmail(email);
+  const [existingUser] = await db
+    .select({
+      id: usersTable.id,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
 
   if (existingUser) {
     return res
