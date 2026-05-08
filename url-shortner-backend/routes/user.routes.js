@@ -1,5 +1,4 @@
 import express from 'express';
-import { signupPostRequestBodySchema } from '../validations/request.validation.js';
 import { hashedPasswordWithSalt } from '../utils/hash.js';
 import { createNewUser, getUserByEmail } from '../services/user.services.js';
 import { signupPostRequestBodySchema } from '../validations/request.validation.js';
