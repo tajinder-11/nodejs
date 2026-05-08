@@ -15,12 +15,8 @@ router.post('/signup', async (req, res) => {
   }
 
   const { firstName, lastName, email, password } = validationResult.data;
-  const [existingUser] = await db
-    .select({
-      id: usersTable.id,
-    })
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
+
+  const existingUser = getUserByEmail(email);
 
   if (existingUser) {
     return res
