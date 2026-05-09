@@ -36,7 +36,7 @@ router.post('/signup', async (req, res) => {
     firstName,
     lastName,
     salt,
-    password,
+    password: hashedPassword,
   });
 
   return res.status(201).json({ data: user });
@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
     res.status(404).json({ error: `User with email ${email} does not exist` });
   }
 
-  const { password: hashedPassword } = hashedPasswordWithSalt(
+  const { password: hashedPassword } = await hashedPasswordWithSalt(
     password,
     user.salt,
   );
