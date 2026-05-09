@@ -12,3 +12,12 @@ export async function createUserToken(payload) {
   const token = jwt.sign(payloadValidatedData, JWT_SECRET);
   return token;
 }
+
+export function validateUserToken(token) {
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
