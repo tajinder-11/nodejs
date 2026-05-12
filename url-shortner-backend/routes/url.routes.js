@@ -3,17 +3,12 @@ import { shortenPostRequestBodySchema } from '../validations/request.validation.
 import { nanoid } from 'nanoid';
 import { db } from '../db/index.js';
 import { urlsTable } from '../models/index.js';
+import { ensureAuthenticated } from '../middlewares/auth.middleware.js';
+import { createNewUrl } from '../services/urls.services.js';
 
 const router = express.Router();
 
-router.post('/shorten', async (req, res) => {
-  const userId = req.user?.id;
-  if (!userId) {
-    res
-      .status(401)
-      .json({ error: 'You must be logged in to access this resource' });
-  }
-
+router.post('/shorten', ensureAuthenticated, async (req, res) => {
   const validationResult = await shortenPostRequestBodySchema.safeParseAsync(
     req.body,
   );
@@ -26,19 +21,9 @@ router.post('/shorten', async (req, res) => {
   console.log('code: ', code);
 
   const shortCode = code ? code : nanoid(6);
+  const userId = req?.user?.id;
 
-  const [result] = await db
-    .insert(urlsTable)
-    .values({
-      shortCode,
-      targetURL: url,
-      userId,
-    })
-    .returning({
-      id: urlsTable.id,
-      shortCode: urlsTable.shortCode,
-      targetURL: urlsTable.targetURL,
-    });
+  const result = await createNewUrl({ shortCode, url, userId });
 
   return res.status(201).json({
     id: result.id,
