@@ -8,7 +8,7 @@ import { validateUserToken } from '../utils/token.js';
  */
 
 export function authenticationMiddleware(req, res, next) {
-  const authHeader = req.headers['authprization'];
+  const authHeader = req.headers['authorization'];
 
   if (!authHeader) return next();
 
@@ -21,6 +21,7 @@ export function authenticationMiddleware(req, res, next) {
   const [_, token] = authHeader.split(' ');
 
   const payload = validateUserToken(token);
+  console.log('paylaod: ', payload);
   req.user = payload;
   next();
 }
